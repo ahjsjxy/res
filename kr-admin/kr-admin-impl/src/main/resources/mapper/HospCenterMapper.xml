@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.admin.mapper.HospCenterMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.admin.entity.HospCenter" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="deleted" property="deleted" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user" property="createUser" jdbcType="BIGINT" />
+    <result column="create_user_name" property="createUserName" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user" property="updateUser" jdbcType="BIGINT" />
+    <result column="update_user_name" property="updateUserName" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap id="HospCenterVoMap" type="com.ronglian.kangrui.saas.research.admin.vo.HospCenterVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+
+
+    <select id="selectHospCenter" resultMap="HospCenterVoMap">
+        select
+        bhc.id,
+        bhc.name,
+        bhc.remark
+        from base_hosp_center bhc
+        where bhc.deleted=0
+        <if test="name!=null and name !=''">
+            and bhc.name like concat('%',#{name},'%')
+        </if>
+    </select>
+
+    <select id="selectDefaultCenter" resultMap="HospCenterVoMap">
+        select
+        bhc.id,
+        bhc.name
+        from
+        base_hosp_center_dept_user bhcdu
+        inner join
+        base_hosp_center_dept bhcd
+        on bhcdu.center_dept_id = bhcd.id
+        inner join
+        base_hosp_center bhc
+        on bhcd.center_id=bhc.id
+        where
+        bhcdu.user_id=#{userId}
+        and bhc.deleted=0
+
+    </select>
+
+
+
+</mapper>

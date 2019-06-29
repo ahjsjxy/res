@@ -1,0 +1,4 @@
+# research-big-data
+127.0.0.1 kr-center kr-config  kr-gate
+172.18.1.33 kr-sql
+172.18.1.33 kr-redis

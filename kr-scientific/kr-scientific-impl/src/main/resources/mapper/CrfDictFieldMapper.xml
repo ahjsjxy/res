@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.CrfDictFieldMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.sci.entity.CrfDictField" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="crf_id" property="crfId" jdbcType="BIGINT" />
+    <result column="crf_form_id" property="crfFormId" jdbcType="BIGINT" />
+    <result column="dict_id" property="dictId" jdbcType="BIGINT" />
+    <result column="field_id" property="fieldId" jdbcType="BIGINT" />
+    <result column="field_name" property="fieldName" jdbcType="VARCHAR" />
+    <result column="display" property="display" jdbcType="INTEGER" />
+    <result column="deleted" property="deleted" jdbcType="INTEGER" />
+    <result column="generate_to_db" property="generateToDb" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user" property="createUser" jdbcType="BIGINT" />
+    <result column="create_user_name" property="createUserName" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user" property="updateUser" jdbcType="BIGINT" />
+    <result column="update_user_name" property="updateUserName" jdbcType="VARCHAR" />
+  </resultMap>
+
+    <resultMap id="CrfFieldVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.CrfFieldVo">
+        <id column="id" property="id"/>
+        <result column="field_id" property="fieldId"/>
+        <result column="field_name" property="fieldName"/>
+        <result column="display" property="display"/>
+        <result column="generate_to_db" property="generateToDb"/>
+    </resultMap>
+
+
+  <resultMap id="FieldVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.FieldVo">
+    <id column="id" property="id"/>
+    <result column="code" property="code"/>
+    <result column="label" property="label"/>
+    <result column="name" property="name"/>
+    <result column="field_type" property="fieldType"/>
+    <result column="data_type" property="dataType"/>
+    <result column="required" property="required"/>
+    <result column="unit" property="unit"/>
+    <result column="min_value" property="minValue"/>
+    <result column="max_value" property="maxValue"/>
+    <result column="description" property="description"/>
+    <result column="default_value" property="defaultValue"/>
+    <result column="disabled" property="disabled"/>
+  </resultMap>
+
+  <update id="updateByCrfId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfDictFieldVo">
+        update
+            crf_dict_field
+          set
+            deleted=1,
+            update_time=now()
+        where
+          crf_id=#{crfId}
+          and dict_id=#{dictId}
+
+          and field_id in
+          <foreach collection="fieldIdList" item="fieldId" open="(" close=")" separator=",">
+              #{fieldId}
+          </foreach>
+
+  </update>
+
+
+  <select id="getSelectFieldByCrfId" parameterType="com.ronglian.kangrui.saas.research.sci.entity.CrfDictField" resultMap="FieldVoMap">
+      select
+          f.id,
+          f.code,
+          f.label,
+          f.name,
+          f.field_type,
+          f.data_type,
+          f.required,
+          f.unit,
+          f.min_value,
+          f.max_value,
+          f.description,
+          f.default_value,
+          'true' as disabled
+      from
+          crf_dict_field cdf,
+          field f,
+          dictionary d
+      where
+        cdf.field_id=f.id
+        and cdf.dict_id=d.id
+        and cdf.deleted=0
+        and f.deleted=0
+        and d.deleted=0
+        and cdf.crf_id=#{crfId}
+        and cdf.dict_id=#{dictId}
+      <if test="fieldId != null">
+          and cdf.field_id=#{fieldId}
+      </if>
+  </select>
+
+
+
+    <update id="updateCrfDictFieldByCrf" parameterType="com.ronglian.kangrui.saas.research.sci.entity.CrfDictField">
+        UPDATE
+            crf_dict_field
+        SET
+            deleted = 1,
+            update_time = now()
+        WHERE
+        deleted=0
+        <if test="crfId != null">
+            and  crf_id = #{crfId}
+        </if>
+        <if test="crfFormId != null">
+            and  crf_form_id = #{crfFormId}
+        </if>
+    </update>
+
+
+
+    <select id="getCrfAndFieldGenerateToDbNoList" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfDictFieldVo"  resultMap="CrfFieldVoMap">
+        select
+            cdf.id,
+            cdf.field_id,
+            cdf.field_name,
+            cdf.generate_to_db,
+            cdf.display
+        from
+            study_crf sc,
+            study s,
+            crf c,
+            crf_dict_field cdf
+        where
+            sc.study_id=s.id
+            and sc.crf_form_id=c.id
+            and cdf.crf_form_id=c.id
+            and s.deleted=0
+            and c.deleted=0
+            and cdf.deleted=0
+            and cdf.generate_to_db=0
+            and c.generate_to_db=0
+            and c.type=1
+            and c.table_name is NULL
+            and cdf.field_name is NULL
+            and s.id=#{studyId}
+            <if test="crfFormId != null">
+                and  cdf.crf_form_id = #{crfFormId}
+            </if>
+    </select>
+
+
+
+    <select id="getFieldsGenerateToDbByCrfFormId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfDictFieldVo" resultMap="CrfFieldVoMap">
+             select
+                    cdf.id,
+                    cdf.field_id,
+                    cdf.field_name,
+                    cdf.generate_to_db,
+                    cdf.display
+            from
+                    crf c,
+                    crf_dict_field cdf
+            where
+            c.id=cdf.crf_form_id
+            and c.deleted=0
+            and c.table_name is not NULL
+            and c.generate_to_db=1
+            and c.deleted=0
+            and cdf.deleted=0
+            and cdf.generate_to_db=0
+            and cdf.field_name is NULL
+            and cdf.crf_form_id=#{crfFormId}
+    </select>
+
+
+
+    <select id="getCrfAndFieldGenerateToDbList" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfDictFieldVo"  resultMap="CrfFieldVoMap">
+        select
+            cdf.id,
+            cdf.field_id,
+            cdf.field_name,
+            cdf.generate_to_db,
+            cdf.display
+        from
+            study_crf sc,
+            study s,
+            crf c,
+            crf_dict_field cdf
+        where
+            sc.study_id=s.id
+            and sc.crf_form_id=c.id
+            and cdf.crf_form_id=c.id
+            and s.deleted=0
+            and c.deleted=0
+            and cdf.deleted=0
+            and cdf.generate_to_db=1
+            and c.generate_to_db=1
+            and c.type=1
+            and c.table_name is not NULL
+            and cdf.field_name is not NULL
+            and s.id=#{studyId}
+            <if test="crfFormId != null">
+                and  cdf.crf_form_id = #{crfFormId}
+            </if>
+    </select>
+
+
+    <select id="getCrfDictFieldListByFieldIds"  parameterType="java.util.List"  resultMap="BaseResultMap">
+        select
+                cdf.id,
+                cdf.crf_id,
+                cdf.crf_form_id,
+                cdf.dict_id,
+                cdf.field_id,
+                cdf.field_name,
+                cdf.generate_to_db,
+                cdf.display,
+                cdf.deleted
+        from
+            crf_dict_field cdf,
+            study_crf sc,
+            crf c,
+            study s
+        where
+            cdf.crf_form_id=c.id
+            and c.id=sc.crf_form_id
+            and sc.study_id=s.id
+            and c.deleted=0
+            and s.deleted=0
+            and cdf.deleted=0
+            and cdf.field_id in
+            <foreach collection="fieldIdList" index="index" item="fieldId" open="(" close=")" separator=",">
+                #{fieldId}
+            </foreach>
+
+    </select>
+
+</mapper>

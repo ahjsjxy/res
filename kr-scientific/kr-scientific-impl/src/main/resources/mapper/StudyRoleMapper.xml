@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.StudyRoleMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.sci.entity.StudyRole" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="study_id" property="studyId" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="allow_operate" property="allowOperate" jdbcType="INTEGER" />
+    <result column="deleted" property="deleted" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user" property="createUser" jdbcType="BIGINT" />
+    <result column="create_user_name" property="createUserName" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user" property="updateUser" jdbcType="BIGINT" />
+    <result column="update_user_name" property="updateUserName" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap id="StudyRoleVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.StudyRoleVo">
+      <id column="id" property="id"/>
+      <result column="study_id" property="studyId"/>
+      <result column="name" property="name"/>
+      <result column="remark" property="remark"/>
+      <result column="allow_operate" property="allowOperate"/>
+      <result column="level" property="level"/>
+  </resultMap>
+
+
+  <select id="getStudyRoleList" parameterType="com.ronglian.kangrui.saas.research.sci.vo.StudyRoleVo" resultMap="StudyRoleVoMap">
+        select
+          id,
+          study_id,
+          name,
+          remark,
+          allow_operate,
+          2 as level
+        from
+          study_role
+        where
+          study_id=#{studyId}
+          and deleted=0
+        <if test="name!=null and name!=''">
+            and name like "%"#{name}"%"
+        </if>
+  </select>
+
+
+
+    <select id="checkNameExists" parameterType="com.ronglian.kangrui.saas.research.sci.vo.StudyRoleVo" resultMap="StudyRoleVoMap">
+        select id, name from study_role  where name=#{name} and deleted=0 and id!=#{id}
+    </select>
+
+
+</mapper>

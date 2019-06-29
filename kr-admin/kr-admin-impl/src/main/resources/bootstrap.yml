@@ -1,0 +1,12 @@
+spring:
+  cloud:
+    config:
+#        discovery:
+#           manager-id: kr-config
+#           enabled: true
+        uri: http://kr-config:8750
+        name: kr-admin
+        profile: dev
+
+logging:
+  config: classpath:logback-${spring.cloud.config.profile}.xml

@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.FormMapper" >
+  <resultMap id="CrfParentVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.CrfParentVo">
+    <id column="id" property="id"/>
+    <result column="name" property="name"/>
+    <result column="level" property="level"/>
+    <result column="parent_id" property="parentId"/>
+    <result column="node_id" property="nodeId"/>
+    <result column="property" property="property"/>
+  </resultMap>
+
+    <resultMap id="CrfVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.CrfVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="level" property="level"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="node_id" property="nodeId"/>
+        <result column="property" property="property"/>
+    </resultMap>
+
+    <resultMap id="CrfDictionaryVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.CrfDictionaryVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="level" property="level"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="node_id" property="nodeId"/>
+    </resultMap>
+
+
+    <resultMap id="FieldVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.CrfFieldVo">
+        <id column="id" property="id"/>
+        <result column="field_id" property="fieldId"/>
+        <result column="label" property="label"/>
+        <result column="name" property="name"/>
+        <result column="field_type" property="fieldType"/>
+        <result column="data_type" property="dataType"/>
+        <result column="required" property="required"/>
+        <result column="field_name" property="fieldName"/>
+        <result column="unit" property="unit"/>
+        <result column="min_value" property="minValue"/>
+        <result column="max_value" property="maxValue"/>
+        <result column="description" property="description"/>
+        <result column="default_value" property="defaultValue"/>
+        <result column="display" property="display"/>
+        <result column="disabled" property="disabled"/>
+        <result column="generate_to_db" property="generateToDb"/>
+    </resultMap>
+
+
+    <resultMap id="FieldOptionVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.FieldOptionVo">
+        <id column="id" property="id"/>
+        <result column="field_option" property="fieldOption"/>
+        <result column="display_order" property="displayOrder"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <resultMap id="FormConfigVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.FormConfigVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="table_name" property="tableName"/>
+        <result column="level" property="level"/>
+    </resultMap>
+
+
+    <select id="getStudyInfoById" parameterType="java.lang.Long"  resultType="com.ronglian.kangrui.saas.research.sci.vo.StudyTreeVo">
+        select
+            id,
+            name,
+            1 as level,
+            -1 as parentId,
+            CONCAT('study_', id) as nodeId
+        from study
+        where  deleted=0
+        and id=#{studyId}
+    </select>
+
+
+  <select id="getCrfFormListByStudyId" parameterType="java.lang.Long" resultMap="CrfParentVoMap">
+      select
+        c.id,
+        c.name,
+        2 as level,
+        sc.study_id as parent_id,
+        CONCAT('crf_form_', c.id) as node_id,
+        c.property
+      from
+        study_crf sc
+      inner join crf c
+          on sc.crf_form_id=c.id and c.type=1 and c.level=1
+      where
+        c.deleted=0
+        and study_id=#{studyId}
+  </select>
+
+
+    <select id="getCrfSecondListByFormId" parameterType="java.lang.Long" resultMap="CrfVoMap">
+        select
+            c.id,
+            c.name,
+            3 as level,
+            c.parent_id,
+            CONCAT('crf_', c.id) as node_id,
+            c.property
+        from crf  c
+        where `level`=2  and  type=2 and deleted=0
+        and c.parent_id=#{crfFormId}
+    </select>
+
+
+    <select id="getDictListByCrfId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfVo" resultMap="CrfDictionaryVoMap">
+        select
+            distinct(d.id) as id,
+            d.name,
+            4 as level,
+            cdf.crf_id as parent_id,
+            CONCAT('dict_', d.id, '_', cdf.crf_id) as node_id
+        from crf_dict_field cdf
+        INNER JOIN dictionary d on cdf.dict_id=d.id and d.level=2  and d.deleted=0
+        where cdf.deleted=0
+        and cdf.crf_id=#{id}
+        and cdf.crf_form_id=#{parentId}
+    </select>
+
+
+    <select id="getFieldListByDictId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfDictionaryVo" resultMap="FieldVoMap">
+        select
+            cdf.id,
+            f.id as field_id,
+            f.name,
+            f.label,
+            cdf.display
+        from crf_dict_field cdf
+           inner join field f on cdf.field_id=f.id
+        where
+            cdf.deleted=0
+            and f.deleted=0
+            and cdf.crf_id=#{parentId}
+            and cdf.dict_id=#{id}
+    </select>
+
+
+    <update id="updateCrfDictFieldDisplay" parameterType="com.ronglian.kangrui.saas.research.sci.entity.CrfDictField">
+        update crf_dict_field set display=#{display}, update_time=#{updateTime} where id=#{id}
+    </update>
+
+
+    <select id="getFormListByStudyId" parameterType="java.lang.Long" resultMap="FormConfigVoMap">
+        select
+            c.id,
+            c.name,
+            c.table_name,
+            c.level
+        from
+          study_crf sc
+          inner join crf c on sc.crf_form_id=c.id and c.type=1 and c.level=1
+        where
+            deleted=0
+            and study_id=#{studyId}
+    </select>
+
+
+    <select id="getDisplayFieldsByFormId" parameterType="java.lang.Long" resultMap="FieldVoMap">
+        select
+            cdf.id,
+            f.id as field_id,
+            f.label,
+            f.name,
+            f.field_type,
+            f.data_type,
+            f.required,
+            cdf.field_name,
+            f.unit,
+            f.min_value,
+            f.max_value,
+            f.description,
+            f.default_value,
+            cdf.id as crf_dict_field_id,
+            cdf.display,
+            'false' as disabled
+        from
+          crf_dict_field cdf
+          left join field f  on cdf.field_id=f.id
+        where
+            cdf.crf_form_id=#{crfFormId}
+            and cdf.deleted=0
+            and f.deleted=0
+            and cdf.generate_to_db=1
+            and cdf.field_name is not null
+            and cdf.display=0
+    </select>
+
+
+    <select id="getNormalFieldsByFormId" parameterType="java.lang.Long" resultMap="FieldVoMap">
+        select
+            cdf.id,
+            f.id as field_id,
+            f.label,
+            f.name,
+            f.field_type,
+            f.data_type,
+            f.required,
+            cdf.field_name,
+            f.unit,
+            f.min_value,
+            f.max_value,
+            f.description,
+            f.default_value,
+            cdf.id as crf_dict_field_id,
+            cdf.display,
+            'false' as disabled
+        from
+            crf_dict_field cdf
+            left join field f  on cdf.field_id=f.id
+        where
+            cdf.crf_form_id=#{crfFormId}
+            and cdf.deleted=0
+            and f.deleted=0
+            and cdf.generate_to_db=1
+            and cdf.field_name is not null
+    </select>
+
+
+    <select id="getFieldsByFormId" parameterType="java.lang.Long" resultMap="FieldVoMap">
+        select
+            cdf.id,
+            f.id as field_id,
+            f.label,
+            f.name,
+            f.field_type,
+            f.data_type,
+            f.required,
+            cdf.field_name,
+            f.unit,
+            f.min_value,
+            f.max_value,
+            f.description,
+            f.default_value,
+            cdf.id as crf_dict_field_id,
+            cdf.display,
+            cdf.generate_to_db,
+            'false' as disabled
+        from
+          crf_dict_field cdf
+          left join field f  on cdf.field_id=f.id
+        where
+            cdf.crf_form_id=#{crfFormId}
+            and cdf.deleted=0
+            and f.deleted=0
+            <if test ="crfSecondId != null">
+                AND cdf.crf_id=#{crfSecondId}
+            </if>
+    </select>
+
+
+    <select id="getFieldOptionListByFieldId" parameterType="java.lang.Long" resultMap="FieldOptionVoMap">
+            select
+                id,
+                field_option,
+                display_order,
+                status
+            from
+                field_option fo
+            where
+                fo.deleted=0
+                and fo.field_id=#{fieldId}
+                order by display_order
+    </select>
+
+
+
+    <select id="getCrfFormListById" parameterType="java.lang.Long" resultMap="CrfParentVoMap">
+        select
+        c.id,
+        c.name,
+        2 as level,
+        -1 as parent_id,
+        CONCAT('crf_form_', c.id) as node_id
+        from
+          crf c
+        where  c.deleted=0
+        and c.id=#{crfFormId}
+    </select>
+
+
+    <select id="getFormDataByObjectId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.FormConfigVo" resultType="Map">
+        select
+            *
+        from
+            ${tableName}
+        where
+            deleted=0
+            and objectId=#{objectId}
+            order by id DESC
+    </select>
+
+
+    <insert id="insertOneRowFormData" parameterType="com.ronglian.kangrui.saas.research.sci.vo.FormConfigVo" >
+        INSERT INTO `${tableName}`(objectId, deleted)  VALUES (#{objectId}, 0);
+    </insert>
+    
+    <update id="updateFormState" parameterType="map">
+        update ${tableName}
+        set status=#{status}
+        where objectId=#{objectId}
+        and deleted=0
+    </update>
+
+    <select id="selectStatus" parameterType="map" resultType="com.ronglian.kangrui.saas.research.sci.vo.StatusVo">
+        select status
+        from ${tableName}
+        where objectId=#{objectId}
+        and deleted=0
+    </select>
+
+</mapper>

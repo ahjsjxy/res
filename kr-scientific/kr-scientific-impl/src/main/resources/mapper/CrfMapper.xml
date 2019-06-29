@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.CrfMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.sci.entity.Crf" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="table_name" property="tableName" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+    <result column="property" property="property"/>
+    <result column="generate_to_db" property="generateToDb"/>
+    <result column="level" property="level" jdbcType="INTEGER" />
+    <result column="deleted" property="deleted" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user" property="createUser" jdbcType="BIGINT" />
+    <result column="create_user_name" property="createUserName" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user" property="updateUser" jdbcType="BIGINT" />
+    <result column="update_user_name" property="updateUserName" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap id="CrfFormVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.CrfFormVo">
+    <id column="id" property="id"/>
+    <result column="name" property="name"/>
+    <result column="description" property="description"/>
+    <result column="property" property="property"/>
+    <result column="table_name" property="tableName" jdbcType="VARCHAR" />
+    <result column="generate_to_db" property="generateToDb"/>
+  </resultMap>
+
+
+  <select id="getCrfListByStudyId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfFormVo" resultMap="CrfFormVoMap">
+        select
+              c.id,
+              c.name,
+              c.description,
+              c.property
+        from
+            crf c, study_crf sc
+          where
+          c.id=sc.crf_form_id
+          and c.deleted=0
+          and sc.study_id=#{studyId}
+  </select>
+
+
+  <select id="checkCrfFormNameExists" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfFormVo" resultMap="CrfFormVoMap">
+        select
+              c.id,
+              c.name,
+              c.description,
+              c.property
+        from
+            crf c, study_crf sc
+          where c.id=sc.crf_form_id
+          and c.deleted=0
+          and sc.study_id=#{studyId}
+          and c.name=#{name}
+          and c.id!=#{id}
+  </select>
+
+
+
+    <select id="getCrfTestletsListByCrfFormId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfFormVo" resultMap="CrfFormVoMap">
+        select
+            c.id,
+            c.name,
+            c.description,
+            c.property
+        from
+            crf c
+        where
+            c.parent_id=#{parentId}
+            and c.deleted=0
+    </select>
+
+
+
+    <select id="checkCrfTestletsNameExists" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfFormVo" resultMap="CrfFormVoMap">
+        select
+            c.id,
+            c.name,
+            c.description,
+            c.property
+        from
+            crf c
+        where
+            c.parent_id=#{parentId}
+            and c.deleted=0
+            and c.name=#{name}
+            and c.id!=#{id}
+    </select>
+
+
+
+    <select id="getFormData" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfFormVo" resultType="Map">
+        select * from  ${tableName} where deleted=0 order by id DESC
+  </select>
+
+
+  <update id="updateTestletsDelByCrfFormId" parameterType="com.ronglian.kangrui.saas.research.sci.entity.Crf">
+    update crf set deleted=1 where parent_id=#{parentId}
+  </update>
+
+
+  <select id="getFieldsInfoData" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfFormVo" resultType="Map">
+        select
+
+          <foreach collection="fieldNameList" index="index" item="fieldName"  separator=",">
+            ${fieldName}
+          </foreach>
+
+          from  ${tableName} where deleted=0 order by id DESC
+  </select>
+
+
+  <select id="getCrfFormListByStudyId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.CrfFormVo" resultMap="CrfFormVoMap">
+        select
+            c.id,
+            c.name,
+            c.table_name,
+            c.description,
+            c.property,
+            c.generate_to_db
+        from
+            study_crf sc, study s, crf c
+        where
+           sc.study_id=s.id
+          and sc.crf_form_id=c.id
+          and s.deleted=0
+          and c.deleted=0
+          and c.generate_to_db=0
+          and c.type=1
+          and c.table_name is NULL
+          and s.id=#{studyId}
+  </select>
+
+
+</mapper>

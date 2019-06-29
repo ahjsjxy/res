@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.StudyRoleButtonMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.sci.entity.StudyRoleButton" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="role_id" property="roleId" jdbcType="BIGINT" />
+    <result column="button_code" property="buttonCode" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap id="PortalButtonVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.PortalButtonVo">
+    <id column="id" property="id"/>
+    <result column="code" property="code"/>
+    <result column="name" property="name"/>
+    <result column="role_id" property="roleId"/>
+    <result column="checked" property="checked"/>
+  </resultMap>
+
+
+  <select id="getButtonByRoleId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.PortalButtonVo" resultMap="PortalButtonVoMap">
+          select
+              pb.id,
+              pb.code,
+              pb.name,
+              b.role_id,
+              (
+                      case when b.button_code is not null then 'true'
+                      else 'false' end
+              ) as checked
+          FROM
+              portal_button pb
+          LEFT JOIN
+          (
+               select
+                    srb.*
+               from
+                   study_role sr,
+                   study_role_button srb
+               where
+                 sr.id=srb.role_id
+                 and sr.deleted=0
+                 and sr.study_id=#{studyId}
+                 and sr.id=#{roleId}
+
+          )B on pb.code=B.button_code
+          where pb.deleted=0
+  </select>
+
+
+    <select id="getStudyRoleButtonExists"  parameterType="com.ronglian.kangrui.saas.research.sci.vo.PortalButtonVo" resultMap="PortalButtonVoMap">
+        select
+          srb.role_id,
+          pb.id
+        from
+            study_role_button srb,
+            portal_button pb
+        where
+            srb.button_code=pb.code
+            and srb.role_id=#{roleId}
+            and pb.id=#{id}
+    </select>
+
+    <select id="queryButtonByStudyIdAndUserId" resultMap="BaseResultMap">
+        select
+            DISTINCT srb.button_code
+        from
+            study st
+            inner join study_user stu on st.id=stu.study_id
+            inner join study_role sr on st.id=sr.study_id
+            inner join study_role_button srb on sr.id=srb.role_id
+        where
+            st.id=#{studyId}
+            and stu.user_id=#{userId}
+    </select>
+</mapper>

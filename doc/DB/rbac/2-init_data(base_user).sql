@@ -1,0 +1,2 @@
+INSERT INTO `base_user` VALUES ('1', null, null, null, '0', '2019-06-27 16:56:32', '27', '管理员', '1', '1', '1', null, '管理员', '87b801ea588f7108284bb99d631bea83', '5371f568a45e5ab1f442c38e0932aef24447139b', null, 'admin', null, null);
+INSERT INTO `base_user` VALUES ('2', null, null, null, '0', '2019-06-27 11:06:02', '1', 'admin', '0', '1', '1', null, '于坤', 'b6ad6634463a8ef30801602681ea0199', '5371f568a45e5ab1f442c38e0932aef24447139b', null, 'yukun', null, null);

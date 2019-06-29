@@ -1,0 +1,13 @@
+package ${package}.${moduleName}.rest;
+
+import com.ronglian.kangrui.common.rest.BaseController;
+import ${package}.${moduleName}.biz.${className}Biz;
+import ${package}.${moduleName}.entity.${className};
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("${secondModuleName}")
+public class ${className}Api extends BaseController<${className}Biz,${className}> {
+
+}

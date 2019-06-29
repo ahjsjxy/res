@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.StudyGroupMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.sci.entity.StudyGroup" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="study_id" property="studyId" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="entry_condition" property="entryCondition" jdbcType="VARCHAR" />
+    <result column="exclude_condition" property="excludeCondition" jdbcType="VARCHAR" />
+    <result column="deleted" property="deleted" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user" property="createUser" jdbcType="BIGINT" />
+    <result column="create_user_name" property="createUserName" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user" property="updateUser" jdbcType="BIGINT" />
+    <result column="update_user_name" property="updateUserName" jdbcType="VARCHAR" />
+  </resultMap>
+
+
+  <resultMap id="StudyGroupVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.StudyGroupVo">
+      <id column="id" property="id"/>
+      <result column="study_id" property="studyId"/>
+      <result column="name" property="name" />
+      <result column="entry_condition" property="entryCondition"/>
+      <result column="exclude_condition" property="excludeCondition"/>
+  </resultMap>
+
+
+  <select id="getGroupListByStudyId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.StudyGroupVo" resultMap="StudyGroupVoMap">
+      select
+          id,
+          study_id,
+          name ,
+          entry_condition,
+          exclude_condition
+      FROM
+          study_group
+      where deleted=0
+      and study_id=#{studyId}
+  </select>
+
+
+
+  <select id="checkStudyGroupNameExists" parameterType="com.ronglian.kangrui.saas.research.sci.vo.StudyGroupVo" resultMap="StudyGroupVoMap">
+    select id, name from study_group  where name=#{name} and study_id=#{studyId}   and id!=#{id}  and deleted=0
+  </select>
+
+
+    <select id="selectStudyGroup" parameterType="map" resultType="com.ronglian.kangrui.saas.research.sci.entity.StudyGroup">
+          select DISTINCT
+              sg.id,
+              sg.study_id,
+              sg.name ,
+              sg.entry_condition,
+              sg.exclude_condition
+          from
+              study_user_group_center sugc
+          inner join
+              study_group sg on sg.id=sugc.group_id
+          WHERE
+              sugc.study_id=sg.study_id
+              and sugc.user_id=#{userId}
+              and sugc.study_id=#{studyId}
+              <if test="centerId != 0">
+                  and sugc.center_id=#{centerId}
+              </if>
+              <if test="centerId == 0">
+                  and sugc.center_id in
+                  <foreach collection="list" item="item" open="(" separator="," close=")">
+                      #{item}
+                  </foreach>
+              </if>
+
+    </select>
+</mapper>

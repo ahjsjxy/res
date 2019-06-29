@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.StudyObjectMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.sci.entity.StudyObject" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="study_id" property="studyId" jdbcType="BIGINT" />
+    <result column="study_group_id" property="studyGroupId" jdbcType="BIGINT" />
+    <result column="deleted" property="deleted" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user" property="createUser" jdbcType="BIGINT" />
+    <result column="create_user_name" property="createUserName" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user" property="updateUser" jdbcType="BIGINT" />
+    <result column="update_user_name" property="updateUserName" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap id="StudyObjectVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.StudyObjectVo">
+    <id column="id" property="id"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_time" property="updateTime"/>
+    <result column="centerName" property="centerName"/>
+
+  </resultMap>
+
+
+
+  <select id="queryStudyObjectList" resultMap="StudyObjectVoMap">
+        select
+          so.id,
+          so.create_time,
+          so.update_time,
+          bhc.name as centerName
+        from
+          study_object so
+          inner join base_hosp_center bhc on so.center_id=bhc.id
+        where
+          so.deleted=0
+          and bhc.deleted=0
+          and so.study_id=#{studyObjectVo.studyId}
+          and so.study_group_id=#{studyObjectVo.studyGroupId}
+          <if test="studyObjectVo.centerId != 0">
+          and so.center_id=#{studyObjectVo.centerId}
+          </if>
+          <if test="studyObjectVo.centerId == 0">
+          and so.center_id in
+            <foreach collection="list" item="item" open="(" separator="," close=")">
+              #{item}
+            </foreach>
+          </if>
+          order by so.create_time desc
+  </select>
+
+
+
+</mapper>

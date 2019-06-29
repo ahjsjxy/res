@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.DiseaseMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.sci.entity.Disease" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="code" property="code" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="deleted" property="deleted" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user" property="createUser" jdbcType="BIGINT" />
+    <result column="create_user_name" property="createUserName" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user" property="updateUser" jdbcType="BIGINT" />
+    <result column="update_user_name" property="updateUserName" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap id="DiseaseVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.DiseaseVo">
+    <id column="id" property="id"/>
+    <result column="code" property="code"/>
+    <result column="name" property="name"/>
+    <result column="dictNum" property="dictNum"/>
+    <result column="fieldNum" property="fieldNum"/>
+    <result column="status" property="status"/>
+  </resultMap>
+
+
+    <resultMap id="FieldVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.FieldVo">
+        <id column="id" property="id"/>
+        <result column="code" property="code"/>
+        <result column="label" property="label"/>
+        <result column="name" property="name"/>
+        <result column="field_type" property="fieldType"/>
+        <result column="data_type" property="dataType"/>
+        <result column="required" property="required"/>
+        <result column="unit" property="unit"/>
+        <result column="min_value" property="minValue"/>
+        <result column="max_value" property="maxValue"/>
+        <result column="description" property="description"/>
+        <result column="default_value" property="defaultValue"/>
+        <result column="disabled" property="disabled"/>
+    </resultMap>
+
+
+  <select id="getDiseaseList" parameterType="java.lang.String" resultMap="DiseaseVoMap">
+    select
+         d.id,
+         d.code,
+         d.name,
+         (select count(DISTINCT(df.dict_id)) from disease_field df where df.disease_id=d.id) as dictNum,
+         (select count(df.field_id) from disease_field df where df.disease_id=d.id) as fieldNum,
+         d.status
+      from
+          disease d
+      where
+          d.deleted=0
+      <if test ="name!=null and name!=''">
+        and d.name like "%"#{name}"%"
+      </if>
+      order by d.create_time desc
+  </select>
+
+
+    <select id="checkDiseaseNameExists" parameterType="com.ronglian.kangrui.saas.research.sci.entity.Disease" resultMap="DiseaseVoMap">
+        select id, name from disease  where name=#{name} and deleted=0 and id!=#{id}
+    </select>
+
+
+    <select id="getSelectFieldByDiseaseId" parameterType="com.ronglian.kangrui.saas.research.sci.entity.DiseaseField" resultMap="FieldVoMap">
+            select
+              f.id,
+              f.code,
+              f.label,
+              f.name,
+              f.field_type,
+              f.data_type,
+              f.required,
+              f.unit,
+              f.min_value,
+              f.max_value,
+              f.description,
+              f.default_value,
+              'true' as disabled
+            from
+                disease d, disease_field df, field f
+            where
+                d.id=df.disease_id
+                and df.field_id=f.id
+                and d.deleted=0
+                and df.deleted=0
+                and f.deleted=0
+                and d.id=#{diseaseId}
+                and df.dict_id=#{dictId}
+                <if test ="fieldId!=null and fieldId!=''">
+                    and f.id=#{fieldId}
+                </if>
+    </select>
+
+</mapper>

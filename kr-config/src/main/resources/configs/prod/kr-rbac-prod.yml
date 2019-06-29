@@ -1,0 +1,101 @@
+spring:
+    application:
+        name: kr-rbac
+    http:
+      multipart:
+        maxFileSize: 20MB
+        maxRequestSize: 20MB
+    jackson:
+        date-format: yyyy-MM-dd HH:mm:ss
+        time-zone: GMT+8
+        default-property-inclusion: non_null
+    redis:
+        host: kr-redis
+        port: 6379
+        password:
+        timeout: 0
+    jpa:
+        showSql: false
+        hibernate.ddl-auto: update
+        # 保持hibernate session和view同步，否则lazyFetch会失败
+        openInView: true
+    datasource:
+        name: test
+        url: jdbc:mysql://kr-sql:3306/permission_system?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&useSSL=false
+        driver-class-name: com.mysql.jdbc.Driver
+        username: root
+        password: 123.com
+        # 使用druid数据源
+        type: com.alibaba.druid.pool.DruidDataSource
+        filters: stat
+        maxActive: 20
+        initialSize: 1
+        maxWait: 60000
+        minIdle: 1
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        validationQuery: select 'x'
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        poolPreparedStatements: true
+        maxOpenPreparedStatements: 20
+    zipkin:
+        enabled: true
+    sleuth:
+      sampler:
+        percentage: 1
+mybatis:
+    basepackage: com.ronglian.kangrui.saas.research.rbac.mapper
+    xmlLocation: classpath:mapper/**/*.xml
+
+server:
+    port: 8783
+
+eureka:
+  instance:
+    # docker 部署开启
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+  client:
+    service-url:
+      defaultZone: http://kr-center:8761/eureka
+# 必须配置
+feign:
+  httpclient:
+    enabled: false
+  okhttp:
+    enabled: true
+
+ribbon:
+  eureka:
+    enabled: true
+  ReadTimeout: 120000
+  ConnectTimeout: 120000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 1
+  OkToRetryOnAllOperations: false
+
+hystrix:
+  threadpool:
+    default:
+      coreSize: 1000 ##并发执行的最大线程数，默认10
+      maxQueueSize: 1000 ##BlockingQueue的最大队列数
+      queueSizeRejectionThreshold: 500 ##即使maxQueueSize没有达到，达到queueSizeRejectionThreshold该值后，请求也会被拒绝
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 110000
+
+swagger:
+    basepackage: com.ronglian.kangrui.saas.research.rbac
+    service:
+        name: Rbac Back
+        description: Rbac Back后端服务
+        developer: ronglian
+
+auth:
+  user:
+    token-header: Kr-D-Token

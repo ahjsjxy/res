@@ -1,0 +1,27 @@
+spring:
+  application:
+        name: kr-config
+  profiles:
+    active: native
+  cloud:
+    config:
+      server:
+        native:
+          searchLocations: classpath:/configs/${spring.cloud.config.profile}/
+      profile: dev
+
+server:
+    port: 8750 #启动端口
+
+eureka:
+    instance:
+        # docker 部署开启
+        prefer-ip-address: true
+        instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+    client:
+      service-url:
+        defaultZone: http://kr-center:8761/eureka
+
+management:
+  security:
+      enabled: false

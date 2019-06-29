@@ -1,0 +1,14 @@
+package ${package}.${moduleName}.intf.api;
+
+import org.springframework.cloud.netflix.feign.FeignClient;
+
+/**
+ *
+ * @author ${author}
+ * @email ${email}
+ * @date ${datetime}
+ */
+@FeignClient(value = "${moduleName}")
+public interface I${className}Service {
+	
+}

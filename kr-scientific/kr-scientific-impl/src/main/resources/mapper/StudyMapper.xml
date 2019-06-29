@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.StudyMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.sci.entity.Study" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="test_stage" property="testStage" jdbcType="VARCHAR" />
+    <result column="object_count" property="objectCount" jdbcType="INTEGER" />
+    <result column="group_type" property="groupType" jdbcType="INTEGER" />
+    <result column="disease_id" property="diseaseId" jdbcType="BIGINT" />
+    <result column="deleted" property="deleted" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user" property="createUser" jdbcType="BIGINT" />
+    <result column="create_user_name" property="createUserName" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user" property="updateUser" jdbcType="BIGINT" />
+    <result column="update_user_name" property="updateUserName" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap id="StudyVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.StudyVo">
+    <id column="id" property="id"/>
+    <result column="name" property="name"/>
+    <result column="create_time" property="createTime"/>
+    <result column="status" property="status"/>
+    <result column="type" property="type"/>
+    <result column="study_object_num" property="studyObjectNum"/>
+    <result column="fieldNum" property="fieldNum"/>
+    <result column="disease_id" property="diseaseId"/>
+    <result column="create_user_name" property="createUserName"/>
+  </resultMap>
+
+
+  <select id="getStudyList" parameterType="com.ronglian.kangrui.saas.research.sci.vo.StudyVo" resultMap="StudyVoMap">
+      select
+          s.id,
+          s.name,
+          s.create_time,
+          s.status,
+          if(s.create_user =#{userId}, '我发起的' , '我参与的') as type,
+          (select count(so.id) from study_object so where so.study_id=s.id and so.deleted=0) as study_object_num,
+          (
+              select
+                  count(cdf.id)
+              from
+                  study_crf sc, crf c, crf_dict_field cdf
+              where
+                  sc.crf_form_id=c.id
+                  and c.id=cdf.crf_form_id
+                  and sc.study_id=s.id
+                  and c.deleted=0
+                  and cdf.deleted=0
+          ) as fieldNum,
+          disease_id,
+          s.create_user_name
+      from
+        study s
+      where
+        s.deleted=0
+        and s.study_flag=#{studyFlag}
+      <if test ="name!=null and name!=''">
+          and s.name like "%"#{name}"%"
+      </if>
+      and s.id in
+      (
+          select distinct study_id from study_user where user_id=#{userId}
+      )
+  </select>
+    
+    <select id="getButtonListByStudyAndUserId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.StudyVo" resultType="com.ronglian.kangrui.saas.research.sci.vo.ButtonCodeVo">
+          select DISTINCT code
+            from
+            portal_button pb
+            inner join study_role_button srb on pb.code = srb.button_code
+            inner join study_role_user sru on srb.role_id=sru.role_id
+            inner join study_role sr on sru.role_id=sr.id
+            where
+            sr.study_id=#{id}
+            and sru.user_id=#{userId}
+            and pb.deleted=0
+            and sr.deleted=0
+    </select>
+
+
+    <select id="checkStudyNameExists" parameterType="com.ronglian.kangrui.saas.research.sci.vo.StudyVo" resultMap="StudyVoMap">
+        select
+            id,
+            name
+        from
+            study
+        where
+            name=#{name}
+            and study_flag=#{studyFlag}
+            and create_user=#{userId}
+            and id!=#{id}
+            and deleted=0
+    </select>
+
+
+    <select id="getStudyListByDiseaseIdList" parameterType="java.util.List" resultMap="StudyVoMap">
+        select
+              id,
+              name
+         from
+            study s
+         where
+              s.deleted=0
+
+            <if test ="diseaseIdList!=null and diseaseIdList.size() >0">
+                and s.disease_id in
+                <foreach collection="diseaseIdList" index="index" item="diseaseId" open="(" close=")" separator=",">
+                    #{diseaseId}
+                </foreach>
+            </if>
+
+    </select>
+
+</mapper>

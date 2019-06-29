@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.FieldMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.sci.entity.Field" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="dictionary_code" property="dictionaryCode" jdbcType="VARCHAR" />
+    <result column="code" property="code" jdbcType="VARCHAR" />
+    <result column="label" property="label" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="field_type" property="fieldType" jdbcType="INTEGER" />
+    <result column="data_type" property="dataType" jdbcType="INTEGER" />
+    <result column="required" property="required" jdbcType="VARCHAR" />
+    <result column="unit" property="unit" jdbcType="VARCHAR" />
+    <result column="min_value" property="minValue" jdbcType="DECIMAL" />
+    <result column="max_value" property="maxValue" jdbcType="DECIMAL" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="default_value" property="defaultValue" jdbcType="VARCHAR" />
+    <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="deleted" property="deleted" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user" property="createUser" jdbcType="BIGINT" />
+    <result column="create_user_name" property="createUserName" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user" property="updateUser" jdbcType="BIGINT" />
+    <result column="update_user_name" property="updateUserName" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap id="FieldVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.FieldVo">
+    <id column="id" property="id"/>
+    <result column="code" property="code"/>
+    <result column="label" property="label"/>
+    <result column="name" property="name"/>
+    <result column="description" property="description"/>
+    <result column="field_type" property="fieldType"/>
+    <result column="status" property="status"/>
+    <result column="parent_id" property="parentId"/>
+  </resultMap>
+
+    <resultMap id="FieldOptionVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.FieldOptionVo">
+      <id column="id" property="id"/>
+      <result column="field_id" property="fieldId" jdbcType="BIGINT" />
+      <result column="field_option" property="fieldOption" jdbcType="VARCHAR" />
+      <result column="display_order" property="displayOrder" jdbcType="DECIMAL" />
+    </resultMap>
+
+
+  <select id="getFieldListByDictId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.FieldVo" resultMap="FieldVoMap">
+      select
+          f.id,
+          f.code,
+          f.label,
+          f.name,
+          f.description,
+          f.field_type,
+          f.status,
+          f.parent_id
+      from
+         field f
+      where
+        f.deleted=0
+        and f.dictionary_code=(select code from dictionary where id=#{dictionaryId})
+        <if test ="name!=null and name!=''">
+          and (f.label like "%"#{name}"%" or f.name like "%"#{name}"%")
+        </if>
+        <if test ="status!=null and status!=''">
+            and f.status=0
+        </if>
+        order by id desc
+  </select>
+
+
+    <select id="checkFieldNameExists" parameterType="com.ronglian.kangrui.saas.research.sci.vo.FieldVo" resultMap="FieldVoMap">
+        select id, name from field  where name=#{name} and deleted=0 and id!=#{id}
+    </select>
+
+
+    <select id="checkFieldLabelExists" parameterType="com.ronglian.kangrui.saas.research.sci.vo.FieldVo" resultMap="FieldVoMap">
+        select id, label from field  where label=#{label} and deleted=0 and id!=#{id}
+    </select>
+
+
+    <select id="getParentListById" parameterType="java.lang.Long" resultMap="FieldVoMap">
+        SELECT
+          T2.id as parent_id
+        FROM (
+                SELECT
+                    @r AS _id,
+                    (SELECT @r := parent_id FROM field WHERE id = _id) AS parent_id,
+                    @l := @l + 1 AS lvl
+                FROM
+                  (SELECT @r :=#{fieldId}, @l := 0) vars,
+                  field h
+               <![CDATA[   WHERE @r <> 0    ]]>
+        ) T1
+        JOIN
+            field T2 ON T1._id = T2.id
+        ORDER BY id
+    </select>
+
+
+    <select id="getChildListById" parameterType="java.lang.Long" resultMap="FieldVoMap">
+      SELECT
+          id,
+          code,
+          label,
+          name,
+          description,
+          field_type,
+          status
+      FROM
+      (
+            SELECT
+              *
+            FROM
+              field
+           <![CDATA[   where  parent_id > 0   ]]>
+            ORDER BY parent_id, id DESC
+      ) realname_sorted,
+      (SELECT @pv :=#{fieldId}) initialisation
+      WHERE
+          <![CDATA[   (FIND_IN_SET(parent_id,@pv)>0    ]]>
+          And @pv := concat(@pv, ',', id))
+    </select>
+
+
+    <select id="getOptionListByFieldId" parameterType="java.lang.Long" resultMap="FieldOptionVoMap">
+        select
+            fo.id,
+            fo.field_id,
+            fo.field_option,
+            fo.display_order
+        from
+            field f, field_option fo
+        where
+          f.id=fo.field_id
+        and f.deleted=0
+        and fo.deleted=0
+        and f.id=#{fieldId}
+        order by fo.display_order
+    </select>
+
+</mapper>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.admin.mapper.HospDeptMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.admin.entity.HospDept" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="deleted" property="deleted" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user" property="createUser" jdbcType="BIGINT" />
+    <result column="create_user_name" property="createUserName" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user" property="updateUser" jdbcType="BIGINT" />
+    <result column="update_user_name" property="updateUserName" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="HospDeptVoMap" type="com.ronglian.kangrui.saas.research.admin.vo.user.HospDeptVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+  </resultMap>
+  <select id="selectHospDeptByCenter" resultMap="HospDeptVoMap">
+    select bhd.id,
+    bhd.name
+    from base_hosp_center_dept bhcd
+    inner join  base_hosp_center bhc on bhcd.center_id=bhc.id
+    inner join base_hosp_dept bhd on bhcd.dept_id=bhd.id
+    where
+    bhc.deleted=0
+    and bhd.deleted=0
+    and bhc.id=#{centerId}
+    <if test="name !=null and name !=''">
+      and bhd.name like concat('%',#{name},'%')
+    </if>
+  </select>
+</mapper>

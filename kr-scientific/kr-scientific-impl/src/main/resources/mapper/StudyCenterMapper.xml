@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.StudyCenterMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.sci.entity.StudyCenter" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="study_id" property="studyId" jdbcType="BIGINT" />
+    <result column="center_id" property="centerId" jdbcType="BIGINT" />
+  </resultMap>
+
+  <resultMap id="HospCenterVoMap" type="com.ronglian.kangrui.saas.research.admin.vo.HospCenterVo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+  </resultMap>
+
+
+
+  <select id="getSelectedCenterList" parameterType="java.lang.Long" resultMap="HospCenterVoMap">
+      select
+          hc.id,
+          hc.name
+      from
+          study_center sc,
+          base_hosp_center hc
+      where
+        sc.center_id=hc.id
+        and hc.deleted=0
+        and sc.study_id=#{studyId}
+  </select>
+
+
+  <select id="getValidCenterList" parameterType="java.lang.Long" resultMap="HospCenterVoMap">
+      select
+        id,
+        name
+      from
+          base_hosp_center hc
+      where hc.deleted=0
+      and hc.id not in (select center_id from study_center where study_id=#{studyId})
+  </select>
+
+
+    <update id="deleteByStudyId" parameterType="java.lang.Long">
+        delete from study_center where study_id=#{studyId}
+    </update>
+
+</mapper>

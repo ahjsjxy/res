@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.StudyCrfMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.sci.entity.StudyCrf" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="crf_form_id" property="crfFormId" jdbcType="BIGINT" />
+    <result column="study_id" property="studyId" jdbcType="BIGINT" />
+  </resultMap>
+
+
+  <select id="getStudyIdByCrfFormId"  parameterType="java.lang.Long"  resultType="com.ronglian.kangrui.saas.research.sci.entity.StudyCrf">
+        select
+            sc.study_id as studyId
+        from
+          crf c,
+          study_crf sc
+        where
+        c.id=sc.crf_form_id
+        and c.deleted=0
+        and c.id=#{crfFormId}
+  </select>
+
+
+    <select id="getCrfListByStudyId"  parameterType="java.lang.Long"  resultMap="BaseResultMap">
+        select
+              sc.crf_form_id
+        from
+            study_crf sc, crf c
+        where
+            sc.crf_form_id=c.id
+            and sc.study_id=#{studyId}
+            and c.deleted=0
+    </select>
+
+</mapper>

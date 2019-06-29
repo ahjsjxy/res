@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ronglian.kangrui.saas.research.sci.mapper.DictionaryMapper" >
+  <resultMap id="BaseResultMap" type="com.ronglian.kangrui.saas.research.sci.entity.Dictionary" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="parent_code" property="parentCode" jdbcType="VARCHAR" />
+    <result column="code" property="code" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="property" property="property" jdbcType="INTEGER" />
+    <result column="level" property="level" jdbcType="INTEGER" />
+    <result column="deleted" property="deleted" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="create_user" property="createUser" jdbcType="BIGINT" />
+    <result column="create_user_name" property="createUserName" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="update_user" property="updateUser" jdbcType="BIGINT" />
+    <result column="update_user_name" property="updateUserName" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap id="DictionaryVoMap" type="com.ronglian.kangrui.saas.research.sci.vo.DictionaryVo">
+    <id column="id" property="id"/>
+    <result column="code" property="code"/>
+    <result column="name" property="name"/>
+    <result column="parentName" property="parentName"/>
+    <result column="property" property="property"/>
+    <result column="fieldNum" property="fieldNum"/>
+    <result column="selectFieldNum" property="selectFieldNum"/>
+  </resultMap>
+
+  <select id="getDictionaryList" parameterType="com.ronglian.kangrui.saas.research.sci.vo.DictionaryVo"  resultMap="DictionaryVoMap">
+      select
+          d.id,
+          d.code,
+          d.name,
+          dp.name as parentName,
+          d.property,
+          (select count(f.id) from field f where f.dictionary_code=d.code and f.status=0 and f.deleted=0) as fieldNum
+        from
+          dictionary dp, dictionary d
+        where
+          dp.code=d.parent_code
+        and d.deleted=0
+        <if test ="name!=null and name!=''">
+          and (d.name like "%"#{name}"%" or dp.name like "%"#{name}"%")
+        </if>
+        <if test ="property!=null">
+           and d.property=#{property}
+        </if>
+        order by dp.code, d.code
+  </select>
+
+
+  <select id="getDictionaryByDiseaseId" parameterType="com.ronglian.kangrui.saas.research.sci.vo.DictionaryVo"  resultMap="DictionaryVoMap">
+              select
+                  d.id,
+                  d.code,
+                  d.name,
+                  dp.name as parentName,
+                  d.property,
+                  (select count(f.id) from field f where f.dictionary_code=d.code and f.status=0 and f.deleted=0) as fieldNum,
+                  (
+                     select count(df.id)
+                        from disease_field df, disease dd , field f
+                     where
+                       df.dict_id=d.id
+                      and df.disease_id=dd.id
+                      and df.field_id=f.id
+                      and f.status=0
+                      and f.deleted=0
+                      and dd.deleted=0
+                      and df.deleted=0
+                      and df.disease_id=#{diseaseId}
+                  ) as selectFieldNum
+              from
+                  dictionary dp
+                  inner join dictionary d  on  dp.code=d.parent_code
+              where
+                d.deleted=0
+                <if test ="name!=null and name!=''">
+                  and (d.name like "%"#{name}"%" or dp.name like "%"#{name}"%")
+                </if>
+                order by dp.code, d.code
+  </select>
+
+
+    <select id="getStudyDictionaryList" parameterType="com.ronglian.kangrui.saas.research.sci.vo.DictionaryVo"  resultMap="DictionaryVoMap">
+        select
+          distinct d.id,
+          d.name,
+          dp.name as parentName,
+          (
+                select
+                    count(ddf.id)
+                from
+                    disease_field ddf, disease dd , field fi
+                where
+                    ddf.dict_id=d.id
+                    and ddf.disease_id=dd.id
+                    and ddf.field_id=fi.id
+                    and fi.status=0
+                    and fi.deleted=0
+                    and dd.deleted=0
+                    and ddf.deleted=0
+                    and ddf.disease_id=#{diseaseId}
+
+          ) as fieldNum,
+          (
+                select
+                    count(cdf.id)
+                from
+                    crf_dict_field cdf, dictionary dd , field f, disease_field ddf
+                where
+                    cdf.dict_id=dd.id
+                    and cdf.field_id=f.id
+                    and cdf.field_id=ddf.field_id
+                    and dd.id=ddf.dict_id
+                    and ddf.deleted=0
+                    and dd.deleted=0
+                    and cdf.deleted=0
+                    and f.deleted=0
+                    and d.id=dd.id
+                    and cdf.crf_id=#{crfId}
+                    and ddf.disease_id=#{diseaseId}
+
+             ) as selectFieldNum
+            from
+                dictionary d,
+                disease_field df,
+                dictionary dp
+        where
+            df.dict_id=d.id
+            and dp.code=d.parent_code
+            and d.deleted=0
+            and df.deleted=0
+            and dp.deleted=0
+            and df.disease_id=#{diseaseId}
+            <if test ="property!=null">
+                and d.property=#{property}
+            </if>
+    </select>
+
+
+
+    <select id="getDictionaryListByCrf" parameterType="com.ronglian.kangrui.saas.research.sci.vo.DictionaryVo"  resultMap="DictionaryVoMap">
+        select
+        d.id,
+        d.code,
+        d.name,
+        dp.name as parentName,
+        d.property,
+        (select count(f.id) from field f where f.dictionary_code=d.code and f.status=0 and f.deleted=0) as fieldNum,
+        (
+                select
+                    count(df.id)
+                from
+                    crf_dict_field df, dictionary dd , field f
+                where
+                    df.dict_id=dd.id
+                    and df.field_id=f.id
+                    and dd.deleted=0
+                    and df.deleted=0
+                    and f.deleted=0
+                    and df.crf_id=#{crfId}
+                    and d.id=dd.id
+        ) as selectFieldNum
+        from
+            dictionary dp, dictionary d
+        where
+            dp.code=d.parent_code
+            and d.deleted=0
+            <if test ="name!=null and name!=''">
+                and (d.name like "%"#{name}"%" or dp.name like "%"#{name}"%")
+            </if>
+            <if test ="property!=null">
+                and d.property=#{property}
+            </if>
+            order by dp.code, d.code
+    </select>
+
+
+</mapper>

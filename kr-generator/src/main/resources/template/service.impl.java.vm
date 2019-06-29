@@ -1,0 +1,15 @@
+package ${package}.${moduleName}.rpc;
+
+import org.springframework.web.bind.annotation.*;
+
+/**
+ *
+ * @author ${author}
+ * @email ${email}
+ * @date ${datetime}
+ */
+@RestController
+@RequestMapping("${className}")
+public class ${className}Service {
+	
+}
